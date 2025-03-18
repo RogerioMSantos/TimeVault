@@ -1,28 +1,63 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import CreateVault from './timevault/CreateVault';
-import VaultList from './timevault/VaultList';
-import VaultDetails from './timevault/VaultDetails';
-import './App.css';
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import VaultFactoryABI from "./artifacts/contracts/VaultFactory.sol/VaultFactory.json";
+import TimeVaultABI from "./artifacts/contracts/TimeVault.sol/TimeVault.json";
 
-function App() {
+const VAULT_FACTORY_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+export default function Home() {
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [vaultFactory, setVaultFactory] = useState(null);
+  const [vaults, setVaults] = useState([]);
+  const [account, setAccount] = useState(null);
+
+  useEffect(() => {
+    if (typeof window.ethereum !== "undefined") {
+      const _provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(_provider);
+      setVaultFactory(new ethers.Contract(VAULT_FACTORY_ADDRESS, VaultFactoryABI.abi, _provider));
+    }
+  }, []);
+
+  async function connectWallet() {
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    setAccount(accounts[0]);
+    setSigner(provider.getSigner());
+  }
+
+  async function fetchVaults() {
+    if (!vaultFactory || !account) return;
+    const userVaults = await vaultFactory.getVaults(account);
+    setVaults(userVaults);
+  }
+
+  async function createVault(token, unlockTime, goalAmount, targetWallet, alternativeWallet) {
+    if (!signer) return;
+    const contractWithSigner = vaultFactory.connect(signer);
+    await contractWithSigner.createVault(token, unlockTime, goalAmount, targetWallet, alternativeWallet);
+  }
+
   return (
-    <Router>
-      <div className="App">
-        <header className="App-header">
-          <h1>TimeVault - Cofre Temporizado Descentralizado</h1>
-          <Routes>
-            <Route path="/" element={<VaultList />} />
-            <Route path="/create" element={<CreateVault />} />
-            <Route path="/vault/:id" element={<VaultDetails />} />
-          </Routes>
-        </header>
-      </div>
-    </Router>
+    <div className="p-5">
+      <h1 className="text-2xl font-bold">Time Vault</h1>
+      {!account ? (
+        <button onClick={connectWallet} className="mt-3 p-2 bg-blue-500 text-white">Conectar Carteira</button>
+      ) : (
+        <div>
+          <p>Conectado: {account}</p>
+          <button onClick={fetchVaults} className="mt-3 p-2 bg-green-500 text-white">Listar Cofres</button>
+          <ul>
+            {vaults.map((vault, index) => (
+              <li key={index}>{vault}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 
-export default App;
 
 // import './App.css';
 // import { ethers } from 'ethers'
