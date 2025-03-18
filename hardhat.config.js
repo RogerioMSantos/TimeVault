@@ -20,5 +20,5 @@ module.exports = {
   paths: {
     artifacts: './src/artifacts',
   },
-  solidity: "0.8.4",
+  solidity: "0.8.19",
 };
