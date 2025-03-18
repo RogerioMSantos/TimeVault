@@ -39,21 +39,23 @@ export default function Home() {
   }
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold">Time Vault</h1>
-      {!account ? (
-        <button onClick={connectWallet} className="mt-3 p-2 bg-blue-500 text-white">Conectar Carteira</button>
-      ) : (
-        <div>
-          <p>Conectado: {account}</p>
-          <button onClick={fetchVaults} className="mt-3 p-2 bg-green-500 text-white">Listar Cofres</button>
-          <ul>
-            {vaults.map((vault, index) => (
-              <li key={index}>{vault}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <div className="p-5 bg-light border rounded d-flex flex-column justify-content-center align-items-center">
+        <h1 className="text-2xl font-bold">Time Vault</h1>
+        {!account ? (
+          <button onClick={connectWallet} className="mt-3 p-2 bg-blue-500 text-white btn btn-warning">Conectar Carteira</button>
+        ) : (
+          <div>
+            <p>Conectado: <b>{account}</b></p>
+            <button onClick={fetchVaults} className="mt-3 p-2 bg-green-500 text-white btn btn-primary">Listar Cofres</button>
+            <ul>
+              {vaults.map((vault, index) => (
+                <li key={index}>{vault}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
