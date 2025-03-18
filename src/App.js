@@ -34,13 +34,31 @@ function App() {
       setSigner(signer);
 
       const accounts = await web3Provider.listAccounts();
+      if (!accounts[0]) {
+        console.log('Nenhuma conta conectada.');
+        return;
+      }
       setAccount(accounts[0]);
 
-      try {
-        const ensName = await web3Provider.lookupAddress(accounts[0]);
-        setAccountName(ensName || 'Usuário');
-      } catch (error) {
-        console.error('Erro ao resolver nome ENS:', error);
+      // Verificar se a rede suporta ENS
+      const network = await web3Provider.getNetwork();
+      const isLocalNetwork = network.chainId === 31337; // 31337 é o chainId padrão do Hardhat
+      const isMainnet = network.chainId === 1; // 1 é o chainId da Ethereum Mainnet
+
+      if (isLocalNetwork) {
+        console.log('Rede local detectada. ENS desabilitado.');
+        setAccountName('Usuário');
+      } else if (isMainnet) {
+        // Tentar resolver o nome ENS apenas na Mainnet
+        try {
+          const ensName = await web3Provider.lookupAddress(accounts[0]);
+          setAccountName(ensName || 'Usuário');
+        } catch (error) {
+          console.error('Erro ao resolver nome ENS:', error);
+          setAccountName('Usuário');
+        }
+      } else {
+        console.log('ENS não é suportado nesta rede.');
         setAccountName('Usuário');
       }
 
