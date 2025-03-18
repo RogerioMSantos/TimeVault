@@ -1,28 +1,37 @@
-# setup our Dapp
+# Setup the Dapp
 
 Try running some of the following tasks to get started
 ```shell
 npm install
 ```
-## To start our contract
-compile the contract
+
+## To start the contract
+
+Compile the contract
 ```shell
 npx hardhat compile
 ```
 
-start our local node
+Start local node
 ```shell
 npx hardhat node
 ```
 
-deploy contract
+Deploy contract
 ```shell
 npx hardhat run --network localhost scripts/deploy.js
 ```
 
 Set up NODE_OPTIONS with legacy provider
 ```shell
+# Linux
 export NODE_OPTIONS=--openssl-legacy-provider
+
+# Windows (CMD)
+set NODE_OPTIONS=--openssl-legacy-provider
+
+# Windows (PowerShell)
+$env:NODE_OPTIONS="--openssl-legacy-provider"
 ```
 
 Start React app
