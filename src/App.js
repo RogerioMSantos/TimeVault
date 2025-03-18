@@ -16,28 +16,54 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
-      if (window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-        setProvider(web3Provider);
-        const signer = web3Provider.getSigner();
-        setSigner(signer);
-
-        // Obter endereço da carteira
-        const accounts = await web3Provider.listAccounts();
-        setAccount(accounts[0]);
-
-        // Obter nome da conta (se suportado pela carteira)
-        try {
-          const ensName = await web3Provider.lookupAddress(accounts[0]);
-          setAccountName(ensName || 'Usuário');
-        } catch {
-          setAccountName('Usuário');
-        }
+      if (!window.ethereum) {
+        alert('Por favor, instale o MetaMask ou use um navegador compatível com Ethereum.');
+        return;
       }
+
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+      } catch (error) {
+        console.error('Usuário negou a permissão para acessar a carteira.');
+        return;
+      }
+
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(web3Provider);
+      const signer = web3Provider.getSigner();
+      setSigner(signer);
+
+      const accounts = await web3Provider.listAccounts();
+      setAccount(accounts[0]);
+
+      try {
+        const ensName = await web3Provider.lookupAddress(accounts[0]);
+        setAccountName(ensName || 'Usuário');
+      } catch (error) {
+        console.error('Erro ao resolver nome ENS:', error);
+        setAccountName('Usuário');
+      }
+
+      // Listener para mudança de conta
+      window.ethereum.on('accountsChanged', (newAccounts) => {
+        setAccount(newAccounts[0] || '');
+        setAccountName('Usuário');
+      });
+
+      // Listener para mudança de rede
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+      });
     };
 
     init();
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', () => { });
+        window.ethereum.removeListener('chainChanged', () => { });
+      }
+    };
   }, []);
 
   return (
