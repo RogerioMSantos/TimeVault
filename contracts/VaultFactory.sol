@@ -19,13 +19,12 @@ contract VaultFactory {
     }
     
     function createVault(
-        address token,
         uint256 unlockTime,
         uint256 goalAmount,
         address targetWallet,
         address alternativeWallet
     ) external {
-        TimeVault newVault = new TimeVault(msg.sender, token, unlockTime, goalAmount, targetWallet, alternativeWallet);
+        TimeVault newVault = new TimeVault(msg.sender, unlockTime, goalAmount, targetWallet, alternativeWallet);
         vaults[msg.sender].push(
             Vault({
                 owner: msg.sender,
