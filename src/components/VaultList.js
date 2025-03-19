@@ -8,13 +8,19 @@ const VaultList = ({ provider, signer, account }) => {
 
   useEffect(() => {
     const fetchVaults = async () => {
-      const factory = new ethers.Contract(factoryAddress, VaultFactory.abi, provider);
-      const userVaults = await factory.getVaults(account);
-      setVaults(userVaults);
+      try {
+        const factory = new ethers.Contract(factoryAddress, VaultFactory.abi, provider);
+        const userVaults = await factory.getVaults(account);
+        setVaults(userVaults);
+      } catch (error) {
+        console.error('Erro ao buscar vaults:', error);
+      }
     };
 
-    fetchVaults();
-  }, [account, provider]);
+    if (provider && account) {
+      fetchVaults();
+    }
+  }, [account, provider, signer]);
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
