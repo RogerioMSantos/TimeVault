@@ -8,7 +8,15 @@ import "./TimeVault.sol";
 contract VaultFactory {
     event VaultCreated(address indexed owner, address vaultAddress);
 
-    mapping(address => address[]) public vaults;
+    mapping(address => Vault[]) private vaults;
+
+    struct Vault {
+        address owner;
+        uint256 unlockTime;
+        uint256 goalAmount;
+        address targetWallet;
+        address alternativeWallet;
+    }
     
     function createVault(
         address token,
@@ -18,11 +26,19 @@ contract VaultFactory {
         address alternativeWallet
     ) external {
         TimeVault newVault = new TimeVault(msg.sender, token, unlockTime, goalAmount, targetWallet, alternativeWallet);
-        vaults[msg.sender].push(address(newVault));
+        vaults[msg.sender].push(
+Vault({
+                owner: msg.sender,
+                unlockTime: unlockTime,
+                goalAmount: goalAmount,
+                targetWallet: targetWallet,
+                alternativeWallet: alternativeWallet
+            })
+        );
         emit VaultCreated(msg.sender, address(newVault));
     }
 
-    function getVaults(address owner) external view returns (address[] memory) {
+    function getVaults(address owner) external view returns (Vault[] memory) {
         return vaults[owner];
     }
 }
