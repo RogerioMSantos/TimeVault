@@ -27,7 +27,7 @@ contract VaultFactory {
     ) external {
         TimeVault newVault = new TimeVault(msg.sender, token, unlockTime, goalAmount, targetWallet, alternativeWallet);
         vaults[msg.sender].push(
-Vault({
+            Vault({
                 owner: msg.sender,
                 unlockTime: unlockTime,
                 goalAmount: goalAmount,

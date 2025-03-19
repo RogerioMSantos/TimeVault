@@ -2,11 +2,8 @@
 
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-contract TimeVault is ERC20{
+contract TimeVault {
     address public owner;
-    address public token;
     address public targetWallet;
     address public alternativeWallet;
     uint256 public unlockTime;
@@ -20,14 +17,12 @@ contract TimeVault is ERC20{
     
     constructor(
         address _owner,
-        address _token,
         uint256 _unlockTime,
         uint256 _goalAmount,
         address _targetWallet,
         address _alternativeWallet
-    ) ERC20("TimeVault", "TV") {
+    ) {
         owner = _owner;
-        token = _token;
         unlockTime = _unlockTime;
         goalAmount = _goalAmount;
         targetWallet = _targetWallet;
@@ -44,22 +39,20 @@ contract TimeVault is ERC20{
         _;
     }
 
-    modifier goalmet() {
+    modifier goalMetCheck() {
         require(goalMet, "Goal not met");
         _;
     }
 
     modifier vaultUnlocked() {
         require(block.timestamp >= unlockTime, "Vault is still locked");
-        require(totalDeposited >= goalAmount, "Goal not met");
         _;
     }
 
-    function deposit(uint256 amount) external payable {
+    function deposit() external payable {
         require(block.timestamp < unlockTime, "Vault is unlocked");
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
-        totalDeposited += amount;
-        emit Deposited(msg.sender, amount);
+        totalDeposited += msg.value;
+        emit Deposited(msg.sender, msg.value);
     }
     
     function setGoalMet(bool status) external onlyOwner {
@@ -67,21 +60,21 @@ contract TimeVault is ERC20{
         emit GoalStatusUpdated(status);
     }
     
-    function withdraw() external goalmet() vaultUnlocked() onlyTargetWallet(){
-        uint256 balance = IERC20(token).balanceOf(address(this));
-        require(balance > 0, "No funds available");
-
+    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet {
+        require(address(this).balance > 0, "No funds available");
+        
         address recipient = goalMet ? targetWallet : (alternativeWallet != address(0) ? alternativeWallet : address(this));
-        IERC20(token).transfer(recipient, balance);
-        emit Withdrawn(recipient, balance);
+        uint256 amount = address(this).balance;
+        
+        payable(recipient).transfer(amount);
+        emit Withdrawn(recipient, amount);
     }
 
-    function withdrawExcess() external onlyOwner {
-        require(block.timestamp >= unlockTime, "Vault is still locked");
-        uint256 balance = IERC20(token).balanceOf(address(this));
-        require(balance > 0, "No funds available");
-
-        IERC20(token).transfer(owner, balance);
-        emit Withdrawn(owner, balance);
+    function withdrawExcess() external onlyOwner vaultUnlocked {
+        require(address(this).balance > 0, "No funds available");
+        uint256 amount = address(this).balance;
+        
+        payable(owner).transfer(amount);
+        emit Withdrawn(owner, amount);
     }
 }
