@@ -64,6 +64,18 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
       alert("Depósito realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao depositar:", error);
+
+      let errorMessage = "Erro desconhecido ao tentar depositar.";
+
+      if (error?.data?.message) {
+        const match = error.data.message.match(/'(.+?)'/);
+        errorMessage = match ? match[1] : error.data.message;
+      } else if (error?.message) {
+        const match = error.message.match(/'(.+?)'/);
+        errorMessage = match ? match[1] : error.message;
+      }
+
+      alert(`Erro ao depositar: ${errorMessage}`);
     }
   };
 

@@ -42,7 +42,7 @@ const VaultList = ({ provider, account, onSelectVault }) => {
         </div>
         <div className="card-body">
           {vaults.length > 0 ? (
-            <div className="list-group overflow-auto" style={{ maxHeight: "500px" }}>
+            <div className="list-group overflow-auto" style={{ maxHeight: "580px" }}>
               {vaults.map((vault, index) => (
                 <button
                   key={index}
