@@ -100,7 +100,7 @@ function App() {
       <div className="d-flex flex-wrap gap-4">
         {/* Criar Vault */}
         <div className="flex-grow-1">
-          <CreateVault provider={provider} signer={signer} />
+          <CreateVault provider={provider} signer={signer} onSelectVault={setSelectedVault} />
         </div>
 
         {/* Lista de Vaults */}
