@@ -19,6 +19,18 @@ const VaultList = ({ provider, account, onSelectVault }) => {
 
     if (provider && account) {
       fetchVaults();
+
+      const factory = new ethers.Contract(factoryAddress, VaultFactory.abi, provider);
+      factory.on("VaultCreated", (owner, vaultAddress) => {
+        if (owner.toLowerCase() === account.toLowerCase()) {
+          // console.log(`Novo Vault criado: ${vaultAddress}`);
+          fetchVaults(); // Atualiza a interface ao detectar um novo vault
+        }
+      });
+
+      return () => {
+        factory.removeAllListeners("VaultCreated");
+      };
     }
   }, [account, provider]);
 
