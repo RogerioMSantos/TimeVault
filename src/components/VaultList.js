@@ -29,7 +29,14 @@ const VaultList = ({ provider, signer, account }) => {
         {vaults.length > 0 ? (
           <ul className="list-group list-group-flush overflow-auto" style={{ maxHeight: "300px" }}>
             {vaults.map((vault, index) => (
-              <li key={index} className="list-group-item">{vault}</li>
+              <li key={index} className="list-group-item">
+                <strong>Endereço:</strong> {vault.vaultAddress} <br />
+                <strong>Dono:</strong> {vault.owner} <br />
+                <strong>Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()} <br />
+                <strong>Meta:</strong> {ethers.utils.formatEther(vault.goalAmount)} ETH <br />
+                <strong>Carteira Alvo:</strong> {vault.targetWallet} <br />
+                <strong>Carteira Alternativa:</strong> {vault.alternativeWallet}
+              </li>
             ))}
           </ul>
         ) : (

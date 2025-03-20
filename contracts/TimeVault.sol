@@ -49,8 +49,12 @@ contract TimeVault {
         _;
     }
 
-    function deposit() external payable {
+    modifier vaultLocked() {
         require(block.timestamp < unlockTime, "Vault is unlocked");
+        _;
+    }
+
+    function deposit() external payable vaultLocked{
         totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value);
     }
@@ -63,11 +67,10 @@ contract TimeVault {
     function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet {
         require(address(this).balance > 0, "No funds available");
         
-        address recipient = goalMet ? targetWallet : (alternativeWallet != address(0) ? alternativeWallet : address(this));
         uint256 amount = address(this).balance;
         
-        payable(recipient).transfer(amount);
-        emit Withdrawn(recipient, amount);
+        payable(targetWallet).transfer(amount);
+        emit Withdrawn(targetWallet, amount);
     }
 
     function withdrawExcess() external onlyOwner vaultUnlocked {
@@ -75,6 +78,17 @@ contract TimeVault {
         uint256 amount = address(this).balance;
         
         payable(owner).transfer(amount);
+        emit Withdrawn(owner, amount);
+    }
+
+    function withdrawExcessLocked() external onlyOwner vaultLocked {
+        require(address(this).balance > 0, "No funds available");
+        uint256 amount = address(this).balance;
+        totalDeposited = 0;
+
+        payable(owner).transfer(amount / 2 );
+        //payable(criadorDoContrado).transfer(amount / 2 );
+        
         emit Withdrawn(owner, amount);
     }
 }

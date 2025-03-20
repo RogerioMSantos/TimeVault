@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./TimeVault.sol";
 
 contract VaultFactory {
-    event VaultCreated(address indexed owner, address vaultAddress);
+    event VaultCreated(address indexed owner, Vault vaultAddress);
 
     mapping(address => Vault[]) private vaults;
 
@@ -16,6 +16,7 @@ contract VaultFactory {
         uint256 goalAmount;
         address targetWallet;
         address alternativeWallet;
+        address vaultAddress;
     }
     
     function createVault(
@@ -25,16 +26,18 @@ contract VaultFactory {
         address alternativeWallet
     ) external {
         TimeVault newVault = new TimeVault(msg.sender, unlockTime, goalAmount, targetWallet, alternativeWallet);
-        vaults[msg.sender].push(
-            Vault({
+
+        Vault memory vault = Vault({
                 owner: msg.sender,
                 unlockTime: unlockTime,
                 goalAmount: goalAmount,
                 targetWallet: targetWallet,
-                alternativeWallet: alternativeWallet
-            })
-        );
-        emit VaultCreated(msg.sender, address(newVault));
+                alternativeWallet: alternativeWallet,
+                vaultAddress: address(newVault)
+            });
+
+        vaults[msg.sender].push(vault);
+        emit VaultCreated(msg.sender, vault);
     }
 
     function getVaults(address owner) external view returns (Vault[] memory) {
