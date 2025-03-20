@@ -23,7 +23,7 @@ const CreateVault = ({ provider, signer }) => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
+    <div className="container d-flex justify-content-center align-items-center">
       <div className="card p-4 shadow-lg" style={{ maxWidth: "400px", width: "100%" }}>
         <h2 className="text-center mb-3">Criar Novo Vault</h2>
         <div className="d-flex flex-column gap-3">

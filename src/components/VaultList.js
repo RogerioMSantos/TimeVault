@@ -23,19 +23,19 @@ const VaultList = ({ provider, signer, account }) => {
   }, [account, provider, signer]);
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card p-4 shadow-lg" style={{ maxWidth: "400px", width: "100%" }}>
+    <div className="container d-flex justify-content-center align-items-center">
+      <div className="card p-4 shadow-lg" style={{ maxWidth: "500px", width: "100%" }}>
         <h2 className="text-center mb-3">Meus Vaults</h2>
         {vaults.length > 0 ? (
           <ul className="list-group list-group-flush overflow-auto" style={{ maxHeight: "300px" }}>
             {vaults.map((vault, index) => (
               <li key={index} className="list-group-item">
                 <strong>Endereço:</strong> {vault.vaultAddress} <br />
-                <strong>Dono:</strong> {vault.owner} <br />
+                <strong>Dono:</strong> {`${vault.owner.slice(0, 8)}...${vault.owner.slice(-6)}`} <br />
                 <strong>Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()} <br />
                 <strong>Meta:</strong> {ethers.utils.formatEther(vault.goalAmount)} ETH <br />
-                <strong>Carteira Alvo:</strong> {vault.targetWallet} <br />
-                <strong>Carteira Alternativa:</strong> {vault.alternativeWallet}
+                <strong>Carteira Alvo:</strong> {`${vault.targetWallet.slice(0, 8)}...${vault.targetWallet.slice(-6)}`} <br />
+                <strong>Carteira Alternativa:</strong> {`${vault.alternativeWallet.slice(0, 8)}...${vault.alternativeWallet.slice(-6)}`}
               </li>
             ))}
           </ul>
