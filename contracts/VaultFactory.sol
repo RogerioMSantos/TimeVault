@@ -19,7 +19,7 @@ contract VaultFactory {
         address vaultAddress;
         string description;
     }
-    
+
     function createVault(
         uint256 unlockTime,
         uint256 goalAmount,
@@ -27,17 +27,24 @@ contract VaultFactory {
         address alternativeWallet,
         string memory description
     ) external {
-        TimeVault newVault = new TimeVault(msg.sender, unlockTime, goalAmount, targetWallet, alternativeWallet, description);
+        TimeVault newVault = new TimeVault(
+            msg.sender,
+            unlockTime,
+            goalAmount,
+            targetWallet,
+            alternativeWallet,
+            description
+        );
 
         Vault memory vault = Vault({
-                owner: msg.sender,
-                unlockTime: unlockTime,
-                goalAmount: goalAmount,
-                targetWallet: targetWallet,
-                alternativeWallet: alternativeWallet,
-                vaultAddress: address(newVault),
-                description: description
-            });
+            vaultAddress: address(newVault),
+            owner: msg.sender,
+            unlockTime: unlockTime,
+            goalAmount: goalAmount,
+            targetWallet: targetWallet,
+            alternativeWallet: alternativeWallet,
+            description: description
+        });
 
         vaults[msg.sender].push(vault);
         emit VaultCreated(msg.sender, vault);

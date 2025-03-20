@@ -54,7 +54,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
   if (!vault) return <div className="text-center mt-4">Carregando detalhes do vault...</div>;
 
   return (
-    <div className="container mb-4">
+    <div className="container mb-4" style={{ maxWidth: "500px" }}>
       <div className="card shadow-lg">
         <div className="card-header bg-success text-white text-center">
           <h4>Detalhes do Vault</h4>

@@ -23,7 +23,7 @@ const VaultList = ({ provider, account, onSelectVault }) => {
   }, [account, provider]);
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: "400px" }}>
       <div className="card shadow-lg">
         <div className="card-header bg-primary text-white text-center">
           <h4>Meus Vaults</h4>

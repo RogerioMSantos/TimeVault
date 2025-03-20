@@ -11,11 +11,11 @@ contract TimeVault {
     uint256 public goalAmount;
     bool public goalMet;
     uint256 public totalDeposited;
-    
+
     event Deposited(address indexed sender, uint256 amount);
     event Withdrawn(address indexed receiver, uint256 amount);
     event GoalStatusUpdated(bool status);
-    
+
     constructor(
         address _owner,
         uint256 _unlockTime,
@@ -31,7 +31,7 @@ contract TimeVault {
         alternativeWallet = _alternativeWallet;
         description = _description;
     }
-    
+
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
@@ -57,26 +57,25 @@ contract TimeVault {
         _;
     }
 
-    function deposit() external payable vaultLocked{
+    function deposit() external payable vaultLocked {
         totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value);
 
         if (totalDeposited >= goalAmount) {
-            goalMet = true;
-            emit GoalStatusUpdated(true);
+            setGoalMet(true);
         }
     }
-    
-    function setGoalMet(bool status) external onlyOwner {
+
+    function setGoalMet(bool status) private {
         goalMet = status;
         emit GoalStatusUpdated(status);
     }
-    
+
     function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet {
         require(address(this).balance > 0, "No funds available");
-        
+
         uint256 amount = address(this).balance;
-        
+
         payable(targetWallet).transfer(amount);
         emit Withdrawn(targetWallet, amount);
     }
@@ -84,7 +83,7 @@ contract TimeVault {
     function withdrawExcess() external onlyOwner vaultUnlocked {
         require(address(this).balance > 0, "No funds available");
         uint256 amount = address(this).balance;
-        
+
         payable(owner).transfer(amount);
         emit Withdrawn(owner, amount);
     }
@@ -94,9 +93,7 @@ contract TimeVault {
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
-        payable(owner).transfer(amount / 2 );
-        //payable(criadorDoContrado).transfer(amount / 2 );
-        
+        payable(owner).transfer(amount / 2);
         emit Withdrawn(owner, amount);
     }
 }
