@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import VaultFactory from '../artifacts/contracts/VaultFactory.sol/VaultFactory.json';
-import { factoryAddress } from '../App';
+import React, { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import VaultFactory from "../artifacts/contracts/VaultFactory.sol/VaultFactory.json";
+import { factoryAddress } from "../App";
 
-const VaultList = ({ provider, signer, account }) => {
+const VaultList = ({ provider, account, onSelectVault }) => {
   const [vaults, setVaults] = useState([]);
 
   useEffect(() => {
@@ -13,35 +13,39 @@ const VaultList = ({ provider, signer, account }) => {
         const userVaults = await factory.getVaults(account);
         setVaults(userVaults);
       } catch (error) {
-        console.error('Erro ao buscar vaults:', error);
+        console.error("Erro ao buscar vaults:", error);
       }
     };
 
     if (provider && account) {
       fetchVaults();
     }
-  }, [account, provider, signer]);
+  }, [account, provider]);
 
   return (
-    <div className="container d-flex justify-content-center align-items-center">
-      <div className="card p-4 shadow-lg" style={{ maxWidth: "500px", width: "100%" }}>
-        <h2 className="text-center mb-3">Meus Vaults</h2>
-        {vaults.length > 0 ? (
-          <ul className="list-group list-group-flush overflow-auto" style={{ maxHeight: "300px" }}>
-            {vaults.map((vault, index) => (
-              <li key={index} className="list-group-item">
-                <strong>Endereço:</strong> {vault.vaultAddress} <br />
-                <strong>Dono:</strong> {`${vault.owner.slice(0, 8)}...${vault.owner.slice(-6)}`} <br />
-                <strong>Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()} <br />
-                <strong>Meta:</strong> {ethers.utils.formatEther(vault.goalAmount)} ETH <br />
-                <strong>Carteira Alvo:</strong> {`${vault.targetWallet.slice(0, 8)}...${vault.targetWallet.slice(-6)}`} <br />
-                <strong>Carteira Alternativa:</strong> {`${vault.alternativeWallet.slice(0, 8)}...${vault.alternativeWallet.slice(-6)}`}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted text-center">Nenhum vault encontrado.</p>
-        )}
+    <div className="container">
+      <div className="card shadow-lg">
+        <div className="card-header bg-primary text-white text-center">
+          <h4>Meus Vaults</h4>
+        </div>
+        <div className="card-body">
+          {vaults.length > 0 ? (
+            <div className="list-group overflow-auto" style={{ maxHeight: "275px" }}>
+              {vaults.map((vault, index) => (
+                <button
+                  key={index}
+                  className="list-group-item list-group-item-action d-flex flex-column"
+                  onClick={() => onSelectVault(vault.vaultAddress)}
+                >
+                  <p><strong>Meta:</strong> {ethers.utils.formatEther(vault.goalAmount)} ETH</p>
+                  <p><strong>Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted text-center">Nenhum vault encontrado.</p>
+          )}
+        </div>
       </div>
     </div>
   );
