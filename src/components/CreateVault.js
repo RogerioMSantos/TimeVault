@@ -8,6 +8,7 @@ const CreateVault = ({ provider, signer, onSelectVault }) => {
   const [goalAmount, setGoalAmount] = useState("");
   const [targetWallet, setTargetWallet] = useState("");
   const [alternativeWallet, setAlternativeWallet] = useState("");
+  const [description, setDescription] = useState("");
   const [vaultAddress, setVaultAddress] = useState("");
 
   const [errors, setErrors] = useState({});
@@ -30,6 +31,9 @@ const CreateVault = ({ provider, signer, onSelectVault }) => {
     if (!ethers.utils.isAddress(alternativeWallet))
       newErrors.alternativeWallet = "Endereço da carteira alternativa inválido.";
 
+    if (description === "")
+      newErrors.description = "A descrição é obrigatória.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -43,7 +47,8 @@ const CreateVault = ({ provider, signer, onSelectVault }) => {
         Math.floor(new Date(unlockTime).getTime() / 1000),
         ethers.utils.parseUnits(goalAmount, 18),
         targetWallet,
-        alternativeWallet
+        alternativeWallet,
+        description
       );
 
       await tx.wait();
@@ -79,13 +84,22 @@ const CreateVault = ({ provider, signer, onSelectVault }) => {
           {errors.unlockTime && <div className="invalid-feedback">{errors.unlockTime}</div>}
 
           <input
-            type="text"
+            type="number"
             className={`form-control ${errors.goalAmount ? "is-invalid" : ""}`}
             placeholder="Quantidade Alvo"
             value={goalAmount}
             onChange={(e) => setGoalAmount(e.target.value)}
           />
           {errors.goalAmount && <div className="invalid-feedback">{errors.goalAmount}</div>}
+
+          <input
+            type="text"
+            className={`form-control ${errors.description ? "is-invalid" : ""}`}
+            placeholder="Descrição"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          {errors.description && <div className="invalid-feedback">{errors.description}</div>}
 
           <input
             type="text"

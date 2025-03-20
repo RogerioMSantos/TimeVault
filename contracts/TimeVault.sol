@@ -6,6 +6,7 @@ contract TimeVault {
     address public owner;
     address public targetWallet;
     address public alternativeWallet;
+    string public description;
     uint256 public unlockTime;
     uint256 public goalAmount;
     bool public goalMet;
@@ -20,13 +21,15 @@ contract TimeVault {
         uint256 _unlockTime,
         uint256 _goalAmount,
         address _targetWallet,
-        address _alternativeWallet
+        address _alternativeWallet,
+        string memory _description
     ) {
         owner = _owner;
         unlockTime = _unlockTime;
         goalAmount = _goalAmount;
         targetWallet = _targetWallet;
         alternativeWallet = _alternativeWallet;
+        description = _description;
     }
     
     modifier onlyOwner() {

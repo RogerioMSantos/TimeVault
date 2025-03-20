@@ -16,6 +16,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
           goalAmount: await vaultContract.goalAmount(),
           targetWallet: await vaultContract.targetWallet(),
           alternativeWallet: await vaultContract.alternativeWallet(),
+          description: await vaultContract.description(),
           goalMet: await vaultContract.goalMet(),
           totalDeposited: await vaultContract.totalDeposited(),
         };
@@ -64,6 +65,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
             <li className="list-group-item"><strong>Proprietário:</strong> {vault.owner}</li>
             <li className="list-group-item"><strong>Tempo de Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()}</li>
             <li className="list-group-item"><strong>Quantidade Alvo:</strong> {ethers.utils.formatUnits(vault.goalAmount, 18)} ETH</li>
+            <li className="list-group-item"><strong>Descrição:</strong> {vault.description}</li>
             <li className="list-group-item"><strong>Carteira Alvo:</strong> {vault.targetWallet}</li>
             <li className="list-group-item"><strong>Carteira Alternativa:</strong> {vault.alternativeWallet}</li>
             <li className="list-group-item"><strong>Meta Alcançada:</strong> {vault.goalMet ? "Sim ✅" : "Não ❌"}</li>
