@@ -57,6 +57,11 @@ contract TimeVault {
     function deposit() external payable vaultLocked{
         totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value);
+
+        if (totalDeposited >= goalAmount) {
+            goalMet = true;
+            emit GoalStatusUpdated(true);
+        }
     }
     
     function setGoalMet(bool status) external onlyOwner {

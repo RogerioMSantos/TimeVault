@@ -31,10 +31,16 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
   }, [vaultAddress, provider]);
 
   const deposit = async () => {
-    const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
-    const tx = await vaultContract.deposit(ethers.utils.parseUnits(amount, 18));
-    await tx.wait();
-    alert("Depósito realizado com sucesso!");
+    try {
+      const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
+      const tx = await vaultContract.deposit({
+        value: ethers.utils.parseUnits(amount, "ether"),
+      });
+      await tx.wait();
+      alert("Depósito realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao depositar:", error);
+    }
   };
 
   const withdraw = async () => {
@@ -47,7 +53,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
   if (!vault) return <div className="text-center mt-4">Carregando detalhes do vault...</div>;
 
   return (
-    <div className="container mt-4 mb-4">
+    <div className="container mb-4">
       <div className="card shadow-lg">
         <div className="card-header bg-success text-white text-center">
           <h4>Detalhes do Vault</h4>
