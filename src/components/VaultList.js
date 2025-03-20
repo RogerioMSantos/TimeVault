@@ -49,8 +49,9 @@ const VaultList = ({ provider, account, onSelectVault }) => {
                   className="list-group-item list-group-item-action d-flex flex-column"
                   onClick={() => onSelectVault(vault.vaultAddress)}
                 >
-                  <p><strong>Meta:</strong> {ethers.utils.formatEther(vault.goalAmount)} ETH</p>
-                  <p><strong>Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()}</p>
+                  <p className="mb-1"><strong>Descrição:</strong> {vault.description}</p>
+                  <p className="mb-1"><strong>Meta:</strong> {ethers.utils.formatEther(vault.goalAmount)} ETH</p>
+                  <p className="mb-1"><strong>Desbloqueio:</strong> {new Date(vault.unlockTime * 1000).toLocaleString()}</p>
                 </button>
               ))}
             </div>

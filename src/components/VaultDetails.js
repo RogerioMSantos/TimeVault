@@ -6,6 +6,8 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
   const [vault, setVault] = useState(null);
   const [amount, setAmount] = useState("");
 
+
+
   useEffect(() => {
     const fetchVaultDetails = async () => {
       try {
@@ -28,6 +30,27 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
 
     if (vaultAddress && provider) {
       fetchVaultDetails();
+
+      const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, provider);
+
+      // Escutando eventos
+      const handleDeposit = (sender, amount) => {
+        // console.log(`Depósito detectado: ${amount.toString()} wei de ${sender}`);
+        fetchVaultDetails(); // Atualiza os dados do vault
+      };
+
+      const handleGoalStatusUpdated = (status) => {
+        // console.log(`Status da meta atualizado: ${status}`);
+        fetchVaultDetails(); // Atualiza os dados do vault
+      };
+
+      vaultContract.on("Deposited", handleDeposit);
+      vaultContract.on("GoalStatusUpdated", handleGoalStatusUpdated);
+
+      return () => {
+        vaultContract.off("Deposited", handleDeposit);
+        vaultContract.off("GoalStatusUpdated", handleGoalStatusUpdated);
+      };
     }
   }, [vaultAddress, provider]);
 
@@ -45,10 +68,26 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
   };
 
   const withdraw = async () => {
-    const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
-    const tx = await vaultContract.withdraw();
-    await tx.wait();
-    alert("Saque realizado com sucesso!");
+    try {
+      const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
+      const tx = await vaultContract.withdraw();
+      await tx.wait();
+      alert("Saque realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao sacar:", error);
+
+      let errorMessage = "Erro desconhecido ao tentar sacar.";
+
+      if (error?.data?.message) {
+        const match = error.data.message.match(/'(.+?)'/);
+        errorMessage = match ? match[1] : error.data.message;
+      } else if (error?.message) {
+        const match = error.message.match(/'(.+?)'/);
+        errorMessage = match ? match[1] : error.message;
+      }
+
+      alert(`Erro ao sacar: ${errorMessage}`);
+    }
   };
 
   if (!vault) return <div className="text-center mt-4">Carregando detalhes do vault...</div>;
