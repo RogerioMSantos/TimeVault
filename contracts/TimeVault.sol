@@ -57,7 +57,7 @@ contract TimeVault {
         _;
     }
 
-    function deposit() external payable vaultLocked {
+    function deposit() external payable {
         totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value);
 
