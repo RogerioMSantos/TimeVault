@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider & react-scripts build",
     "hardhat": "hardhat compile & hardhat node",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
