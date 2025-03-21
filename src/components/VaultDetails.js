@@ -5,6 +5,7 @@ import TimeVault from "../artifacts/contracts/TimeVault.sol/TimeVault.json";
 const VaultDetails = ({ provider, signer, vaultAddress }) => {
   const [vault, setVault] = useState(null);
   const [amount, setAmount] = useState("");
+  const [isValidAmount, setIsValidAmount] = useState(true);
 
   useEffect(() => {
     const fetchVaultDetails = async () => {
@@ -50,7 +51,20 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
     }
   }, [vaultAddress, provider]);
 
+  const validateAmount = (value) => {
+    const isValid = !isNaN(value) && parseFloat(value) > 0;
+    setIsValidAmount(isValid);
+  };
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    setAmount(value);
+    validateAmount(value);
+  };
+
   const deposit = async () => {
+    if (!isValidAmount) return;
+
     try {
       const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
       const tx = await vaultContract.deposit({
@@ -60,7 +74,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
       alert("Depósito realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao depositar:", error);
-      alert("Erro ao depositar: " + (error.data.message || "Erro desconhecido"));
+      alert("Erro ao depositar: " + (error.data?.message || "Erro desconhecido"));
     }
   };
 
@@ -72,7 +86,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
       alert("Saque realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao sacar:", error);
-      alert("Erro ao sacar: " + (error.data.message || "Erro desconhecido"));
+      alert("Erro ao sacar: " + (error.data?.message || "Erro desconhecido"));
     }
   };
 
@@ -101,12 +115,14 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
             <div className="input-group">
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${isValidAmount ? "" : "is-invalid"}`}
                 placeholder="Quantidade a depositar"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                disabled={vault.isWithdrawn}
+                onChange={handleAmountChange}
               />
-              <button className="btn btn-primary" onClick={deposit}>Depositar</button>
+              <button className="btn btn-primary" onClick={deposit} disabled={vault.isWithdrawn || !isValidAmount}>Depositar</button>
+              <div className="invalid-feedback">Por favor, insira um valor válido maior que zero.</div>
             </div>
             <button className="btn btn-danger mt-3 w-100" onClick={withdraw} disabled={vault.isWithdrawn}>Sacar</button>
           </div>
