@@ -5,8 +5,7 @@ import TimeVault from "../artifacts/contracts/TimeVault.sol/TimeVault.json";
 const VaultDetails = ({ provider, signer, vaultAddress }) => {
   const [vault, setVault] = useState(null);
   const [amount, setAmount] = useState("");
-
-
+  const [isValidAmount, setIsValidAmount] = useState(true);
 
   useEffect(() => {
     const fetchVaultDetails = async () => {
@@ -21,6 +20,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
           description: await vaultContract.description(),
           goalMet: await vaultContract.goalMet(),
           totalDeposited: await vaultContract.totalDeposited(),
+          isWithdrawn: await vaultContract.isWithdrawn(),
         };
         setVault(details);
       } catch (error) {
@@ -33,28 +33,38 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
 
       const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, provider);
 
-      // Escutando eventos
-      const handleDeposit = (sender, amount) => {
-        // console.log(`Depósito detectado: ${amount.toString()} wei de ${sender}`);
-        fetchVaultDetails(); // Atualiza os dados do vault
-      };
-
-      const handleGoalStatusUpdated = (status) => {
-        // console.log(`Status da meta atualizado: ${status}`);
-        fetchVaultDetails(); // Atualiza os dados do vault
+      const handleDeposit = () => fetchVaultDetails();
+      const handleGoalStatusUpdated = () => fetchVaultDetails();
+      const handleWithdraw = () => {
+        fetchVaultDetails();
       };
 
       vaultContract.on("Deposited", handleDeposit);
       vaultContract.on("GoalStatusUpdated", handleGoalStatusUpdated);
+      vaultContract.on("Withdrawn", handleWithdraw);
 
       return () => {
         vaultContract.off("Deposited", handleDeposit);
         vaultContract.off("GoalStatusUpdated", handleGoalStatusUpdated);
+        vaultContract.off("Withdrawn", handleWithdraw);
       };
     }
   }, [vaultAddress, provider]);
 
+  const validateAmount = (value) => {
+    const isValid = !isNaN(value) && parseFloat(value) > 0;
+    setIsValidAmount(isValid);
+  };
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    setAmount(value);
+    validateAmount(value);
+  };
+
   const deposit = async () => {
+    if (!isValidAmount) return;
+
     try {
       const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
       const tx = await vaultContract.deposit({
@@ -64,18 +74,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
       alert("Depósito realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao depositar:", error);
-
-      let errorMessage = "Erro desconhecido ao tentar depositar.";
-
-      if (error?.data?.message) {
-        const match = error.data.message.match(/'(.+?)'/);
-        errorMessage = match ? match[1] : error.data.message;
-      } else if (error?.message) {
-        const match = error.message.match(/'(.+?)'/);
-        errorMessage = match ? match[1] : error.message;
-      }
-
-      alert(`Erro ao depositar: ${errorMessage}`);
+      alert("Erro ao depositar: " + (error.data?.message || "Erro desconhecido"));
     }
   };
 
@@ -87,18 +86,7 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
       alert("Saque realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao sacar:", error);
-
-      let errorMessage = "Erro desconhecido ao tentar sacar.";
-
-      if (error?.data?.message) {
-        const match = error.data.message.match(/'(.+?)'/);
-        errorMessage = match ? match[1] : error.data.message;
-      } else if (error?.message) {
-        const match = error.message.match(/'(.+?)'/);
-        errorMessage = match ? match[1] : error.message;
-      }
-
-      alert(`Erro ao sacar: ${errorMessage}`);
+      alert("Erro ao sacar: " + (error.data?.message || "Erro desconhecido"));
     }
   };
 
@@ -107,8 +95,8 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
   return (
     <div className="container mb-4" style={{ maxWidth: "500px" }}>
       <div className="card shadow-lg">
-        <div className="card-header bg-success text-white text-center">
-          <h4>Detalhes do Vault</h4>
+        <div className={`card-header text-center ${vault.isWithdrawn ? "bg-danger" : "bg-success"} text-white`}>
+          <h4>{vault.isWithdrawn ? "Vault Indisponível - Saque Realizado" : "Vault Habilitado"}</h4>
         </div>
         <div className="card-body">
           <ul className="list-group list-group-flush">
@@ -127,14 +115,16 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
             <div className="input-group">
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${isValidAmount ? "" : "is-invalid"}`}
                 placeholder="Quantidade a depositar"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                disabled={vault.isWithdrawn}
+                onChange={handleAmountChange}
               />
-              <button className="btn btn-primary" onClick={deposit}>Depositar</button>
+              <button className="btn btn-primary" onClick={deposit} disabled={vault.isWithdrawn || !isValidAmount}>Depositar</button>
+              <div className="invalid-feedback">Por favor, insira um valor válido maior que zero.</div>
             </div>
-            <button className="btn btn-danger mt-3 w-100" onClick={withdraw}>Sacar</button>
+            <button className="btn btn-danger mt-3 w-100" onClick={withdraw} disabled={vault.isWithdrawn}>Sacar</button>
           </div>
         </div>
       </div>

@@ -99,4 +99,11 @@ contract TimeVault {
         payable(alternativeWallet).transfer(amount / 2);
         emit Withdrawn(alternativeWallet, amount);
     }
+
+    function isWithdrawn() external view returns (bool) {
+        return
+            goalMet &&
+            block.timestamp >= unlockTime &&
+            address(this).balance == 0;
+    }
 }
