@@ -57,6 +57,11 @@ contract TimeVault {
         _;
     }
 
+    modifier hasFounds() {
+        require(address(this).balance > 0, "No funds available");
+        _;
+    }
+
     function deposit() external payable {
         totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value);
@@ -80,20 +85,18 @@ contract TimeVault {
         emit Withdrawn(targetWallet, amount);
     }
 
-    function withdrawExcess() external onlyOwner vaultUnlocked {
-        require(address(this).balance > 0, "No funds available");
+    function withdrawExcess() external onlyOwner vaultUnlocked hasFounds {
         uint256 amount = address(this).balance;
 
-        payable(owner).transfer(amount);
-        emit Withdrawn(owner, amount);
+        payable(alternativeWallet).transfer(amount);
+        emit Withdrawn(alternativeWallet, amount);
     }
 
-    function withdrawExcessLocked() external onlyOwner vaultLocked {
-        require(address(this).balance > 0, "No funds available");
+    function withdrawExcessLocked() external onlyOwner vaultLocked hasFounds {
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
-        payable(owner).transfer(amount / 2);
-        emit Withdrawn(owner, amount);
+        payable(alternativeWallet).transfer(amount / 2);
+        emit Withdrawn(alternativeWallet, amount);
     }
 }
