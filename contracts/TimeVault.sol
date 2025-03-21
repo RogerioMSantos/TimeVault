@@ -96,4 +96,11 @@ contract TimeVault {
         payable(owner).transfer(amount / 2);
         emit Withdrawn(owner, amount);
     }
+
+    function isWithdrawn() external view returns (bool) {
+        return
+            goalMet &&
+            block.timestamp >= unlockTime &&
+            address(this).balance == 0;
+    }
 }
