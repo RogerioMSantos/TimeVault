@@ -11,6 +11,7 @@ contract TimeVault {
     uint256 public goalAmount;
     bool public goalMet;
     uint256 public totalDeposited;
+    bool private canWithdraw;
 
     event Deposited(address indexed sender, uint256 amount);
     event Withdrawn(address indexed receiver, uint256 amount);
@@ -30,6 +31,7 @@ contract TimeVault {
         targetWallet = _targetWallet;
         alternativeWallet = _alternativeWallet;
         description = _description;
+        canWithdraw = true;
     }
 
     modifier onlyOwner() {
@@ -55,6 +57,14 @@ contract TimeVault {
     modifier vaultLocked() {
         require(block.timestamp < unlockTime, "Vault is unlocked");
         _;
+    }
+
+    modifier canWithdrawSafely() {
+        require(canWithdraw, "A withdrawal is already in progress");
+        canWithdraw = false;
+        _;
+
+        canWithdraw = true;
     }
 
     modifier hasFounds() {
