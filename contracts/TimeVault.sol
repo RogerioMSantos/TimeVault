@@ -11,7 +11,7 @@ contract TimeVault {
     uint256 public goalAmount;
     bool public goalMet;
     uint256 public totalDeposited;
-    bool private canWithdraw;
+    bool public alreadyWithdrawn;
 
     event Deposited(address indexed sender, uint256 amount);
     event Withdrawn(address indexed receiver, uint256 amount);
@@ -31,7 +31,7 @@ contract TimeVault {
         targetWallet = _targetWallet;
         alternativeWallet = _alternativeWallet;
         description = _description;
-        canWithdraw = true;
+        alreadyWithdrawn = false;
     }
 
     modifier onlyOwner() {
@@ -59,16 +59,14 @@ contract TimeVault {
         _;
     }
 
-    modifier canWithdrawSafely() {
-        require(canWithdraw, "A withdrawal is already in progress");
-        canWithdraw = false;
-        _;
-
-        canWithdraw = true;
-    }
-
     modifier hasFounds() {
         require(address(this).balance > 0, "No funds available");
+        _;
+    }
+
+    modifier notAlreadyWithdrawn() {
+        require(!alreadyWithdrawn, "Already withdrawn");
+        alreadyWithdrawn = true;
         _;
     }
 
@@ -86,7 +84,7 @@ contract TimeVault {
         emit GoalStatusUpdated(status);
     }
 
-    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet hasFounds canWithdrawSafely{
+    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet hasFounds notAlreadyWithdrawn{
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
@@ -94,7 +92,7 @@ contract TimeVault {
         emit Withdrawn(targetWallet, amount);
     }
 
-    function withdrawExcess() external onlyOwner vaultUnlocked hasFounds canWithdrawSafely{
+    function withdrawExcess() external onlyOwner vaultUnlocked hasFounds notAlreadyWithdrawn{
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
@@ -102,7 +100,7 @@ contract TimeVault {
         emit Withdrawn(alternativeWallet, amount);
     }
 
-    function withdrawExcessLocked() external onlyOwner vaultLocked hasFounds canWithdrawSafely{
+    function withdrawExcessLocked() external onlyOwner vaultLocked hasFounds notAlreadyWithdrawn{
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
