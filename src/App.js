@@ -5,7 +5,7 @@ import VaultList from './components/VaultList';
 import VaultDetails from './components/VaultDetails';
 import './App.css';
 
-export const factoryAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+export const factoryAddress = '0x1B6e19BEC844FEa344668De40aCc29f1f6b4523a';
 
 function App() {
   const [provider, setProvider] = useState(null);
