@@ -76,10 +76,9 @@ contract TimeVault {
         emit GoalStatusUpdated(status);
     }
 
-    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet {
-        require(address(this).balance > 0, "No funds available");
-
+    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet hasFounds{
         uint256 amount = address(this).balance;
+        totalDeposited = 0;
 
         payable(targetWallet).transfer(amount);
         emit Withdrawn(targetWallet, amount);
@@ -87,6 +86,7 @@ contract TimeVault {
 
     function withdrawExcess() external onlyOwner vaultUnlocked hasFounds {
         uint256 amount = address(this).balance;
+        totalDeposited = 0;
 
         payable(alternativeWallet).transfer(amount);
         emit Withdrawn(alternativeWallet, amount);
