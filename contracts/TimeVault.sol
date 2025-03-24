@@ -86,7 +86,7 @@ contract TimeVault {
         emit GoalStatusUpdated(status);
     }
 
-    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet hasFounds{
+    function withdraw() external goalMetCheck vaultUnlocked onlyTargetWallet hasFounds canWithdrawSafely{
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
@@ -94,7 +94,7 @@ contract TimeVault {
         emit Withdrawn(targetWallet, amount);
     }
 
-    function withdrawExcess() external onlyOwner vaultUnlocked hasFounds {
+    function withdrawExcess() external onlyOwner vaultUnlocked hasFounds canWithdrawSafely{
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
@@ -102,7 +102,7 @@ contract TimeVault {
         emit Withdrawn(alternativeWallet, amount);
     }
 
-    function withdrawExcessLocked() external onlyOwner vaultLocked hasFounds {
+    function withdrawExcessLocked() external onlyOwner vaultLocked hasFounds canWithdrawSafely{
         uint256 amount = address(this).balance;
         totalDeposited = 0;
 
