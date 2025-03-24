@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import TimeVault from "../artifacts/contracts/TimeVault.sol/TimeVault.json";
+import { Modal, Button } from "react-bootstrap";
 
 const VaultDetails = ({ provider, signer, vaultAddress }) => {
   const [vault, setVault] = useState(null);
   const [amount, setAmount] = useState("");
   const [isValidAmount, setIsValidAmount] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [withdrawMethod, setWithdrawMethod] = useState(null);
+  const [withdrawModalMessage, setWithdrawModalMessage] = useState("");
 
   useEffect(() => {
     const fetchVaultDetails = async () => {
@@ -76,18 +80,42 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
       console.error("Erro ao depositar:", error);
       alert("Erro ao depositar: " + (error.data?.message || "Erro desconhecido"));
     }
+  }
+
+  const handleWithdrawClick = () => {
+    if (!vault) return;
+
+    const unlockTimestamp = vault.unlockTime * 1000;
+    const currentTime = Date.now();
+
+    if (!vault.goalMet && currentTime < unlockTimestamp) {
+      setWithdrawMethod("withdrawExcessLocked");
+      setWithdrawModalMessage("O tempo de desbloqueio ainda não foi atingido e a meta não foi alcançada. Deseja sacar o valor excedente bloqueado? Atenção: Como penalidade, apenas metade do valor será transferida para a carteira alternativa.");
+    } else if (currentTime < unlockTimestamp) {
+      setWithdrawMethod("withdrawExcessLocked");
+      setWithdrawModalMessage("O tempo de desbloqueio ainda não foi atingido. Deseja sacar o valor total depositado? Atenção: Como penalidade, apenas metade do valor será transferida para a carteira alternativa.");
+    } else if (!vault.goalMet) {
+      setWithdrawMethod("withdrawExcess");
+      setWithdrawModalMessage("A meta não foi atingida. O valor excedente será enviado para a carteira alternativa.");
+    } else {
+      setWithdrawMethod("withdraw");
+      setWithdrawModalMessage("O valor total depositado será transferido para a carteira alvo.");
+    }
+    setShowModal(true);
   };
 
-  const withdraw = async () => {
+  const confirmWithdraw = async () => {
+    if (!withdrawMethod) return;
     try {
       const vaultContract = new ethers.Contract(vaultAddress, TimeVault.abi, signer);
-      const tx = await vaultContract.withdraw();
+      const tx = await vaultContract[withdrawMethod]();
       await tx.wait();
       alert("Saque realizado com sucesso!");
     } catch (error) {
       console.error("Erro ao sacar:", error);
       alert("Erro ao sacar: " + (error.data?.message || "Erro desconhecido"));
     }
+    setShowModal(false);
   };
 
   if (!vault) return <div className="text-center mt-4">Carregando detalhes do vault...</div>;
@@ -124,10 +152,30 @@ const VaultDetails = ({ provider, signer, vaultAddress }) => {
               <button className="btn btn-primary" onClick={deposit} disabled={vault.isWithdrawn || !isValidAmount}>Depositar</button>
               <div className="invalid-feedback">Por favor, insira um valor válido maior que zero.</div>
             </div>
-            <button className="btn btn-danger mt-3 w-100" onClick={withdraw} disabled={vault.isWithdrawn}>Sacar</button>
+            <button className="btn btn-danger mt-3 w-100" onClick={handleWithdrawClick} disabled={vault.isWithdrawn}>Sacar</button>
           </div>
         </div>
       </div>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmação de Saque</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="alert alert-warning fw-bold text-center">
+            {withdrawModalMessage}
+          </p>
+          <p className="text-danger text-center fw-semibold">Deseja continuar?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={confirmWithdraw}>
+            Confirmar Saque
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
