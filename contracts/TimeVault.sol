@@ -109,9 +109,6 @@ contract TimeVault {
     }
 
     function isWithdrawn() external view returns (bool) {
-        return
-            goalMet &&
-            block.timestamp >= unlockTime &&
-            address(this).balance == 0;
+        return alreadyWithdrawn;
     }
 }
